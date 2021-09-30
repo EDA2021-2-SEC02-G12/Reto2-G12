@@ -46,8 +46,9 @@ catalog = None
 def printAntiguas(sorted_list , numero_obras):
     print("Las"  + str(numero_obras) + " mas antiguas son: ")
     if numero_obras <= lt.size(sorted_list):
-        for i in range(1 , numero_obras):
-            print(lt.getElement(sorted_list , i))
+        for i in range(1 , numero_obras + 1):
+            artwork = lt.getElement(sorted_list , i)
+            print("Titulo: " + str(artwork["Title"]) + " Año: " + str(artwork["Date"]))
     else:
         print("n es muy grande")
 

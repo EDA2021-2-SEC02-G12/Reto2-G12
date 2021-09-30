@@ -146,9 +146,6 @@ def cmpArtworkByDateAcquired(artwork1, artwork2):
         return 1
 # Funciones de ordenamiento
 def sort_art_list (art_list):
-    print(art_list)
-    print(type(art_list))
-    print(lt.size(art_list))
     sub_list = lt.subList(art_list , 1 , lt.size(art_list))
     sorted_list = sa.sort(sub_list , cmpArtworkByDateAcquired)
     return sorted_list
