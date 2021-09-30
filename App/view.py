@@ -69,7 +69,7 @@ while True:
         medio = input("Ingrese el nombre del medio: ")
         numero_obras = int(input("Ingrese el valor de n"))
         sorted_list = controller.find_medium(catalog , medio.strip())
-        
+        printAntiguas(sorted_list , numero_obras)
 
     else:
         sys.exit(0)
