@@ -110,7 +110,8 @@ def addArtworkMedium(catalog, mediumname, artwork):
 
 def find_medium(catalog , medium):
     art_list = mp.get(catalog["Medium"] , medium)
-    new_list = sort_art_list(art_list)
+    art_list2 = me.getValue(art_list)
+    new_list = sort_art_list(art_list2)
     return new_list
 
 
@@ -145,6 +146,9 @@ def cmpArtworkByDateAcquired(artwork1, artwork2):
         return 1
 # Funciones de ordenamiento
 def sort_art_list (art_list):
+    print(art_list)
+    print(type(art_list))
+    print(lt.size(art_list))
     sub_list = lt.subList(art_list , 1 , lt.size(art_list))
     sorted_list = sa.sort(sub_list , cmpArtworkByDateAcquired)
     return sorted_list
