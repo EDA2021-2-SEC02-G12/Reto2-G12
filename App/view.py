@@ -42,6 +42,15 @@ def printMenu():
 
 catalog = None
 
+
+def printAntiguas(sorted_list , numero_obras):
+    print("Las"  + str(numero_obras) + " mas antiguas son: ")
+    if numero_obras <= lt.size(sorted_list):
+        for i in range(1 , numero_obras):
+            print(lt.getElement(sorted_list , i))
+    else:
+        print("n es muy grande")
+
 """
 Menu principal
 """
@@ -58,9 +67,9 @@ while True:
     
     elif int(inputs[0]) == 3:
         medio = input("Ingrese el nombre del medio: ")
-        numero_obras = input("Ingrese el valor de n")
+        numero_obras = int(input("Ingrese el valor de n"))
         sorted_list = controller.find_medium(catalog , medio.strip())
-        print(sorted_list)
+        
 
     else:
         sys.exit(0)
