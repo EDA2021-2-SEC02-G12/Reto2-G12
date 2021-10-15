@@ -39,6 +39,7 @@ def printMenu():
     print("1 - Inicializar Catálogo")
     print("2- Cargar información en el catálogo")
     print("3 - Encontrar obras más antiguas para un medio")
+    print("4 - Contar el número total de obras de una nacionalidad")
 
 catalog = None
 
@@ -51,6 +52,13 @@ def printAntiguas(sorted_list , numero_obras):
             print("Titulo: " + str(artwork["Title"]) + " Año: " + str(artwork["Date"]))
     else:
         print("n es muy grande")
+
+def print_artworks_by_nationality(numero_obras , nationality):
+    """
+    Imprime el numero de obras dado un país.
+    
+    """
+    print("El número de obras de nacionalidad " + str(nationality) + " es " + str(numero_obras))
 
 """
 Menu principal
@@ -71,6 +79,12 @@ while True:
         numero_obras = int(input("Ingrese el valor de n"))
         sorted_list = controller.find_medium(catalog , medio.strip())
         printAntiguas(sorted_list , numero_obras)
+    
+    elif int(inputs[0]) == 4:
+        nationality = input("Ingrese la nacionalidad: ")
+        numero_obras = controller.count_artworks(catalog , nationality)
+        print(numero_obras)
+        print_artworks_by_nationality(numero_obras , nationality)
 
     else:
         sys.exit(0)

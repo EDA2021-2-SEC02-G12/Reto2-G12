@@ -25,6 +25,7 @@
  """
 
 
+from DISClib.DataStructures.chaininghashtable import nextPrime
 import config as cf
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
@@ -52,7 +53,9 @@ def newCatalog():
     Retorna el catalogo inicializado.
     """
     catalog = {'artworks': None,
-               'Medium': None}
+                'artists' : None ,
+               'Medium': None , 
+               "Nationality" : None}
 
     """
     Esta lista contiene todas las artworks encontradas
@@ -61,6 +64,8 @@ def newCatalog():
     por los indices creados a continuacion.
     """
     catalog['artworks'] = lt.newList('SINGLE_LINKED')
+    catalog['artists'] = lt.newList('SINGLE_LINKED')
+    catalog["artists_map"] = mp.newMap(nextPrime(15220))
 
     """
     A continuacion se crean indices por diferentes criterios
@@ -75,6 +80,10 @@ def newCatalog():
     catalog['Medium'] = mp.newMap(138000,
                                    maptype='CHAINING',
                                    loadfactor=4.0)
+    
+    catalog['Nationality'] = mp.newMap(300,
+                                   maptype='CHAINING',
+                                   loadfactor=1.5)
 
     return catalog
 
@@ -85,7 +94,43 @@ def addArtwork(catalog, artwork):
     """
     lt.addLast(catalog['artworks'], artwork)
     medium = artwork['Medium']  # Se obtienen la tecnica
+    
     addArtworkMedium(catalog, medium.strip(), artwork)
+
+def addArtist(catalog, artist):
+    """
+    """
+    lt.addLast(catalog['artists'], artist)
+    mp.put(catalog["artists_map"] , artist["ConstituentID"] , artist)
+
+def Artist_Country(catalog):
+    artists_map = catalog["artists_map"]
+    artworks_list = catalog["artworks"]
+
+    for artwork in lt.iterator(artworks_list):
+        if len(artwork["ObjectID"]) > 0:
+            id = int(artwork["ObjectID"])
+            artist = mp.get(artists_map , id)
+            value = me.getValue(artist) #value es la información del artista
+            nationality = value["Nationality"]
+            add_artwork_to_map(catalog , nationality , artwork)
+
+def add_artwork_to_map(catalog , nationality , artwork):
+    if (mp.contains(catalog['Nationality'] , nationality)) == False:
+        empty_list = lt.newList("ARRAYLIST")
+        lt.addLast(empty_list , artwork)
+        mp.put(catalog['Nationality'] , nationality , empty_list)
+    elif (mp.contains(catalog['Nationality'] , nationality)) == True:
+        new_list = mp.get(catalog['Nationality'] , nationality)
+        new_list_value = me.getValue(new_list)
+        lt.addLast(new_list_value , artwork)
+        catalog['Nationality'][nationality] = new_list_value
+
+    list = mp.keySet(catalog["Nationality"])
+    for element in lt.iterator(list):
+        print(element)
+
+
 
 # Funciones para creacion de datos
 
@@ -106,6 +151,8 @@ def addArtworkMedium(catalog, mediumname, artwork):
         lt.addLast(empty_lst , artwork) 
         mp.put(mediums, mediumname, empty_lst)
 
+    
+
 # Funciones de consulta
 
 def find_medium(catalog , medium):
@@ -113,6 +160,18 @@ def find_medium(catalog , medium):
     art_list2 = me.getValue(art_list)
     new_list = sort_art_list(art_list2)
     return new_list
+
+def count_artworks(catalog , nationality):
+    """
+    Esta función recibe el catalogo y una nacionalidad y cuenta el numero de obras de arte
+    asociadas a la nacionalidad (key) en su value (lista de artworks)
+    """
+    map_nationality = catalog["Nationality"]
+    list_nationality = mp.get(map_nationality , nationality)
+    list_nationality = me.getValue(list_nationality)
+    number_of_artworks = lt.size(list_nationality)
+    print(number_of_artworks , "REVISAAAAR")
+    return number_of_artworks
 
 
 # Funciones utilizadas para comparar elementos dentro de una lista
