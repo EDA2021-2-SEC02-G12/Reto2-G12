@@ -24,7 +24,7 @@ from App.model import find_medium
 import config as cf
 import model
 import csv
-
+import time
 
 """
 El controlador se encarga de mediar entre la vista y el modelo.
@@ -46,8 +46,13 @@ def loadData(catalog):
     Carga los datos de los archivos y cargar los datos en la
     estructura de datos
     """
+
+    start_time = time.process_time()
     loadArtwork(catalog)
     loadArtists(catalog)
+    stop_time = time.process_time()
+    elapsed_time_mseg = (stop_time - start_time)*1000
+    return elapsed_time_mseg
 
 def loadArtwork(catalog):
     """

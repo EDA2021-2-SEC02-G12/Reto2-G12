@@ -20,11 +20,13 @@
  * along withthis program.  If not, see <http://www.gnu.org/licenses/>.
  """
 
+import time
 import config as cf
 import sys
 import controller
 from DISClib.ADT import list as lt
 assert cf
+import time
 
 
 """
@@ -72,7 +74,8 @@ while True:
 
     elif int(inputs[0]) == 2:
         print("Cargando información de los archivos ....")
-        controller.loadData(catalog)
+        time1 = controller.loadData(catalog)
+        print("El tiempo es:" , str(time1))
     
     elif int(inputs[0]) == 3:
         medio = input("Ingrese el nombre del medio: ")

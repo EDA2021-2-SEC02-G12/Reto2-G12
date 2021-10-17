@@ -78,8 +78,8 @@ def newCatalog():
     Este indice crea un map cuya llave es el "Constituent ID" del artista.
     """
     catalog["ID_artists_map"] =  mp.newMap(138000,
-                                   maptype='CHAINING',
-                                   loadfactor=4.0)
+                                   maptype='PROBIN',
+                                   loadfactor=0.5)
     """
     Este indice crea un map cuya llave es el medio.
     """
