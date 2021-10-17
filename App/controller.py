@@ -48,7 +48,6 @@ def loadData(catalog):
     """
     loadArtwork(catalog)
     loadArtists(catalog)
-    loadNationality_map(catalog)
 
 def loadArtwork(catalog):
     """
@@ -64,12 +63,8 @@ def loadArtists(catalog):
     input_file = csv.DictReader(open(artistsfile, encoding='utf-8'))
     for artist in input_file:
         model.addArtist(catalog, artist)
+    model.create_nationality_map(catalog)
 
-def loadNationality_map(catalog):
-    """
-    Ejecuta la función que crea un mapa con las nacionalidades y las obras.
-    """
-    model.Artist_Country(catalog)
 
 # Funciones de ordenamiento
 

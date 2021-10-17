@@ -83,7 +83,6 @@ while True:
     elif int(inputs[0]) == 4:
         nationality = input("Ingrese la nacionalidad: ")
         numero_obras = controller.count_artworks(catalog , nationality)
-        print(numero_obras)
         print_artworks_by_nationality(numero_obras , nationality)
 
     else:

@@ -65,7 +65,7 @@ def newCatalog():
     """
     catalog['artworks'] = lt.newList('SINGLE_LINKED')
     catalog['artists'] = lt.newList('SINGLE_LINKED')
-    catalog["artists_map"] = mp.newMap(nextPrime(15220))
+    
 
     """
     A continuacion se crean indices por diferentes criterios
@@ -73,17 +73,26 @@ def newCatalog():
     replican informacion, solo referencian los libros de la lista
     creada en el paso anterior.
     """
-
+    
     """
-    Este indice crea un map cuya llave es el identificador del libro
+    Este indice crea un map cuya llave es el "Constituent ID" del artista.
     """
-    catalog['Medium'] = mp.newMap(138000,
+    catalog["ID_artists_map"] =  mp.newMap(138000,
                                    maptype='CHAINING',
                                    loadfactor=4.0)
-    
+    """
+    Este indice crea un map cuya llave es el medio.
+    """
+    catalog['Medium'] = mp.newMap(138000,
+                                   maptype='PROBIN',
+                                   loadfactor=0.5)
+    """
+    Este indice crea un map cuya llave es la nacionalidad de la obra.
+    """
+
     catalog['Nationality'] = mp.newMap(300,
-                                   maptype='CHAINING',
-                                   loadfactor=1.5)
+                                   maptype='PROBIN',
+                                   loadfactor=0.5)
 
     return catalog
 
@@ -100,35 +109,51 @@ def addArtwork(catalog, artwork):
 def addArtist(catalog, artist):
     """
     """
-    lt.addLast(catalog['artists'], artist)
-    mp.put(catalog["artists_map"] , artist["ConstituentID"] , artist)
+    mp.put(catalog["ID_artists_map"] , artist["ConstituentID"] , artist)
 
-def Artist_Country(catalog):
-    artists_map = catalog["artists_map"]
-    artworks_list = catalog["artworks"]
+def create_nationality_map(catalog):
 
-    for artwork in lt.iterator(artworks_list):
-        if len(artwork["ObjectID"]) > 0:
-            id = int(artwork["ObjectID"])
-            artist = mp.get(artists_map , id)
-            value = me.getValue(artist) #value es la información del artista
-            nationality = value["Nationality"]
-            add_artwork_to_map(catalog , nationality , artwork)
+    for artwork in lt.iterator(catalog["artworks"]):
+        cons_id = artwork["ConstituentID"].split(",")
+        for author_id in cons_id:
+            author_id_s = author_id.strip()
+            #Se obtiene la llave valor del author de el map con indice cons id
+            if mp.contains(catalog["ID_artists_map"] , author_id_s):
+                author_key_value = mp.get(catalog["ID_artists_map"] , author_id_s)
+                author_info = me.getValue(author_key_value)
+                #Se obtiene la informacion del autor sacando el value del key-value
+                nationality = author_info["Nationality"].strip()
+                #Se saca la nacionalidad
+                add_nationality(catalog , nationality , artwork) #Funcion para añadir al map nationality
 
-def add_artwork_to_map(catalog , nationality , artwork):
-    if (mp.contains(catalog['Nationality'] , nationality)) == False:
-        empty_list = lt.newList("ARRAYLIST")
-        lt.addLast(empty_list , artwork)
-        mp.put(catalog['Nationality'] , nationality , empty_list)
-    elif (mp.contains(catalog['Nationality'] , nationality)) == True:
-        new_list = mp.get(catalog['Nationality'] , nationality)
-        new_list_value = me.getValue(new_list)
-        lt.addLast(new_list_value , artwork)
-        catalog['Nationality'][nationality] = new_list_value
 
-    list = mp.keySet(catalog["Nationality"])
-    for element in lt.iterator(list):
-        print(element)
+def add_nationality(catalog , nationality , artwork):
+    map_nationality = catalog['Nationality']
+    existnationality = mp.contains(map_nationality, nationality)
+    if existnationality:
+        entry = mp.get(map_nationality, nationality)
+        nationality_info = me.getValue(entry)
+    else:
+        nationality_info = newNationality(nationality)
+        mp.put(map_nationality, nationality, nationality_info)
+    lt.addLast(nationality_info['artworks'], artwork)
+    totalworks = lt.size(nationality_info['artworks'])
+    nationality_info['tot_artworks'] = totalworks
+
+
+def newNationality(nationality):
+    """
+    Crea una nueva estructura para modelar los libros de un autor
+    y su promedio de ratings. Se crea una lista para guardar los
+    libros de dicho autor.
+    """
+    nation = {'name': "",
+              "artworks": None,
+              "tot_artworks": 0}
+    nation['name'] = nationality
+    nation['artworks'] = lt.newList('SINGLE_LINKED', compareArtworksByName)
+    return nation
+
 
 
 
@@ -168,9 +193,9 @@ def count_artworks(catalog , nationality):
     """
     map_nationality = catalog["Nationality"]
     list_nationality = mp.get(map_nationality , nationality)
-    list_nationality = me.getValue(list_nationality)
-    number_of_artworks = lt.size(list_nationality)
-    print(number_of_artworks , "REVISAAAAR")
+    value = me.getValue(list_nationality)
+    list_artworks = value["artworks"]
+    number_of_artworks = lt.size(list_artworks)
     return number_of_artworks
 
 
@@ -203,6 +228,22 @@ def cmpArtworkByDateAcquired(artwork1, artwork2):
         return 0
     else:
         return 1
+
+def compareArtworksByName(keyname, author):
+    """
+    Compara dos nombres de autor. El primero es una cadena
+    y el segundo un entry de un map
+    """
+    authentry = me.getKey(author)
+    if (keyname == authentry):
+        return 0
+    elif (keyname > authentry):
+        return 1
+    else:
+        return -1
+
+
+
 # Funciones de ordenamiento
 def sort_art_list (art_list):
     sub_list = lt.subList(art_list , 1 , lt.size(art_list))
