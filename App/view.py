@@ -39,9 +39,11 @@ operación solicitada
 def printMenu():
     print("Bienvenido")
     print("1 - Inicializar Catálogo")
-    print("2- Cargar información en el catálogo")
+    print("2 - Cargar información en el catálogo")
     print("3 - Encontrar obras más antiguas para un medio")
     print("4 - Contar el número total de obras de una nacionalidad")
+    print("5 - Listar cronológicamente los artistas")
+    print("6 - Listar cronológicamente las adquisiciones")
 
 catalog = None
 
@@ -61,6 +63,29 @@ def print_artworks_by_nationality(numero_obras , nationality):
     
     """
     print("El número de obras de nacionalidad " + str(nationality) + " es " + str(numero_obras))
+
+def print_req_1(list_artists):
+    print("El numero de artistas en el rango seleccionado es: " + str(lt.size(list_artists)))
+    print("Los 3 primeros artistas son: ")
+    for i in range(1 , 4):
+        element = lt.getElement(list_artists , i)
+        print("Nombre: " + str(element["DisplayName"]) + " Año de Nacimiento: " + str(element["BeginDate"])
+        + " Año de Fallecimiento: " + str(element["EndDate"]) + "Nacionalidad: " + str(element["Nationality"])
+        + " Género: " + str(element["Gender"]))
+    
+    print("Los 3 últimos artistas son: ")
+    for j in range (lt.size(list_artists) , lt.size(list_artists)-3 , -1):
+        element = lt.getElement(list_artists , j)
+        print("Nombre: " + str(element["DisplayName"]) + " Año de Nacimiento: " + str(element["BeginDate"])
+        + " Año de Fallecimiento: " + str(element["EndDate"]) + "Nacionalidad: " + str(element["Nationality"])
+        + " Género: " + str(element["Gender"]))
+
+def print_req2(catalog , list_adq):
+    print("El número total de obras en el rango cronólógico es: " + str(lt.size(list_adq)))
+    print("Las 3 primeras obras son: ")
+    for i in range(1, 4):
+        artwork = lt.getElement(list_adq , i)
+        print("Titulo: " + str(artwork["Title"]) + "Fechas: " + str(artwork["DateAcquired"]))
 
 """
 Menu principal
@@ -87,6 +112,20 @@ while True:
         nationality = input("Ingrese la nacionalidad: ")
         numero_obras = controller.count_artworks(catalog , nationality)
         print_artworks_by_nationality(numero_obras , nationality)
+    
+    elif int(inputs[0]) == 5:
+        initial_year = int(input("Ingrese el año inicial: "))
+        final_year = int(input("Ingrese el año final: "))
+        list = controller.artists_year_listing(initial_year , final_year , catalog)
+        print_req_1(list)
+    
+    elif int(inputs[0]) == 6:
+        initial_date = input("Ingrese la fecha inicial: ")
+        final_date = input("Ingrese la fecha final: ")
+        initial_date_list = initial_date.split("-")
+        final_date_list = final_date.split("-")
+        list_adq = controller.find_adq_date(catalog , initial_date_list , final_date_list)
+        print_req2(catalog , list_adq)
 
     else:
         sys.exit(0)

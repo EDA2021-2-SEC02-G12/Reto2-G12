@@ -58,18 +58,17 @@ def loadArtwork(catalog):
     """
     Carga artworks en una lista
     """
-    artworksfile = cf.data_dir + 'MoMA/Artworks-utf8-large.csv'
+    artworksfile = cf.data_dir + 'MoMA/Artworks-utf8-small.csv'
     input_file = csv.DictReader(open(artworksfile, encoding='utf-8'))
     for artwork in input_file:
         model.addArtwork(catalog, artwork)
 
 def loadArtists(catalog):
-    artistsfile = cf.data_dir + 'MoMA/Artists-utf8-large.csv'
+    artistsfile = cf.data_dir + 'MoMA/Artists-utf8-small.csv'
     input_file = csv.DictReader(open(artistsfile, encoding='utf-8'))
     for artist in input_file:
         model.addArtist(catalog, artist)
     model.create_nationality_map(catalog)
-
 
 # Funciones de ordenamiento
 
@@ -79,3 +78,9 @@ def find_medium(catalog , medium):
 
 def count_artworks(catalog , nationality):
     return model.count_artworks(catalog , nationality) #Cuenta las obras de arte por nacionalidad.
+
+def artists_year_listing(initial_year , final_year , catalog):
+    return model.artists_year_listing(initial_year , final_year , catalog)
+
+def find_adq_date(catalog , initial_date_list , final_date_list):
+    return model.find_adq_date(catalog , initial_date_list , final_date_list)
