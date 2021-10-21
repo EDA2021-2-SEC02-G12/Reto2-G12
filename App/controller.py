@@ -50,6 +50,8 @@ def loadData(catalog):
     start_time = time.process_time()
     loadArtwork(catalog)
     loadArtists(catalog)
+    model.create_nationality_map(catalog)
+    model.create_artist_artwork_map(catalog)
     stop_time = time.process_time()
     elapsed_time_mseg = (stop_time - start_time)*1000
     return elapsed_time_mseg
@@ -84,3 +86,12 @@ def artists_year_listing(initial_year , final_year , catalog):
 
 def find_adq_date(catalog , initial_date_list , final_date_list):
     return model.find_adq_date(catalog , initial_date_list , final_date_list)
+
+def req2(catalog , initial_date_list , final_date_list):
+    return model.req2(catalog , initial_date_list , final_date_list)
+
+def rank_nationality(catalog):
+    return model.rank_nationality(catalog)
+
+def medium(catalog , artist):
+    return model.medium(catalog , artist)

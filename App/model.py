@@ -31,6 +31,7 @@ from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
+from DISClib.Algorithms.Sorting import mergesort as mer
 assert cf
 
 from DISClib.Algorithms.Sorting import mergesort as mg
@@ -112,6 +113,14 @@ def newCatalog():
     catalog["Adquisition_Artwork"] = mp.newMap(500,
                                    maptype='CHAINING',
                                    loadfactor=1)
+    
+    catalog["Adquisition_Date"] = mp.newMap(500,
+                                   maptype='CHAINING',
+                                   loadfactor=1)
+
+    catalog["Artist_Artworks"] = mp.newMap(500,
+                                   maptype='CHAINING',
+                                   loadfactor=1)
 
     return catalog
 
@@ -123,11 +132,35 @@ def addArtwork(catalog, artwork):
     lt.addLast(catalog['artworks'], artwork)
     medium = artwork['Medium']  # Se obtienen la tecnica
     cons_id = artwork["ConstituentID"]
+
     
     addArtworkMedium(catalog, medium.strip(), artwork)
     addArtworksID(catalog, cons_id, artwork)
     create_name_map(catalog)
     adquisition_artwork(catalog , artwork)
+    map_adquisition_date(catalog , artwork)
+
+def map_adquisition_date(catalog , artwork):
+    adq_date = artwork["DateAcquired"]
+    exist = mp.contains(catalog["Adquisition_Date"] , adq_date)
+    if exist:
+        entry1 = mp.get(catalog["Adquisition_Date"] , adq_date)
+        value = me.getValue(entry1)
+    else:
+        value = create_adq_entry(adq_date)
+        mp.put(catalog["Adquisition_Date"] , adq_date , value)
+    lt.addLast(value["artworks"] , artwork)
+
+def create_adq_entry(adq_date):
+    info = {'date': "", 
+            'artworks' : None}
+    info['date'] = adq_date
+    info['artworks'] = lt.newList('SINGLE_LINKED', compareArtworksByName)
+    
+    return info
+
+
+
 
 def adquisition_artwork(catalog , artwork):
     """
@@ -248,33 +281,95 @@ def new_entry(year):
     year_info['artists'] = lt.newList('SINGLE_LINKED', compareArtworksByName)
     return year_info
 
-
-def newNationality(nationality):
-    """
-    Crea una nueva estructura para modelar los libros de un autor
-    y su promedio de ratings. Se crea una lista para guardar los
-    libros de dicho autor.
-    """
-    nation = {'name': "",
-              "artworks": None,
-              "tot_artworks": 0}
-    nation['name'] = nationality
-    nation['artworks'] = lt.newList('SINGLE_LINKED', compareArtworksByName)
-    return nation
-
-
-def create_nationality_map(catalog):
+def create_artist_artwork_map(catalog):
 
     for artwork in lt.iterator(catalog["artworks"]):
-        cons_id = artwork["ConstituentID"].split(",")
+        cons_id = artwork["ConstituentID"]
+        cons_id = cons_id.strip("[] ")
+        cons_id = cons_id.split(",")
         for author_id in cons_id:
-            author_id_s = author_id.strip()
+            author_id_s = author_id
             #Se obtiene la llave valor del author de el map con indice cons id
             if mp.contains(catalog["ID_artists_map"] , author_id_s):
                 author_key_value = mp.get(catalog["ID_artists_map"] , author_id_s)
                 author_info = me.getValue(author_key_value)
                 #Se obtiene la informacion del autor sacando el value del key-value
-                nationality = author_info["Nationality"].strip()
+                name = author_info["DisplayName"]
+                #Se saca la nacionalidad
+                add_name(catalog , name , artwork)
+
+def add_name(catalog , name , artwork):
+    map_name = catalog["Artist_Artworks"]
+    existname = mp.contains(map_name, name)
+    if existname:
+        entry = mp.get(map_name, name)
+        name_info = me.getValue(entry)
+    else:
+        name_info = newName(name)
+        mp.put(map_name, name, name_info)
+    lt.addLast(name_info['artworks'], artwork)
+    totalworks = lt.size(name_info['artworks'])
+    name_info['tot_artworks'] = totalworks
+
+    medium = artwork["Medium"]
+    exist = mp.contains(name_info["Medium"] , medium)
+    if exist:
+        entry2 = mp.get(name_info["Medium"] , medium)
+        medium_info = me.getValue(entry2)
+    else:
+        medium_info = new_medium(medium)
+        mp.put(name_info["Medium"] , medium , medium_info)
+    lt.addLast(medium_info["artworks"] , artwork)
+
+def newName(nationality):
+    """
+    Crea una nueva estructura para modelar los libros de un autor
+    y su promedio de ratings. Se crea una lista para guardar los
+    libros de dicho autor.
+    """
+    name = {'name': "",
+              "artworks": None,
+              "Medium": None ,
+              "tot_artworks": 0}
+    name['name'] = nationality
+    name['artworks'] = lt.newList('SINGLE_LINKED', compareArtworksByName)
+    name["Medium"] = mp.newMap(500,
+                    maptype='CHAINING',
+                    loadfactor=1)
+    return name
+
+def new_medium(medium):
+    """
+    Crea una nueva estructura para modelar los libros de un autor
+    y su promedio de ratings. Se crea una lista para guardar los
+    libros de dicho autor.
+    """
+    medium = {'name': "",
+              "artworks": None,
+              "Medium": None ,
+              "tot_artworks": 0}
+    medium['name'] = medium
+    medium['artworks'] = lt.newList('SINGLE_LINKED', compareArtworksByName)
+    
+    return medium
+
+
+def create_nationality_map(catalog):
+
+    for artwork in lt.iterator(catalog["artworks"]):
+        cons_id = artwork["ConstituentID"]
+        cons_id = cons_id.strip("[")
+        cons_id = cons_id.strip("]")
+        cons_id = cons_id.replace(" " , "")
+        cons_id = cons_id.split(",")
+        for author_id in cons_id:
+            author_id_s = author_id
+            #Se obtiene la llave valor del author de el map con indice cons id
+            if mp.contains(catalog["ID_artists_map"] , author_id_s):
+                author_key_value = mp.get(catalog["ID_artists_map"] , author_id_s)
+                author_info = me.getValue(author_key_value)
+                #Se obtiene la informacion del autor sacando el value del key-value
+                nationality = author_info["Nationality"]
                 #Se saca la nacionalidad
                 add_nationality(catalog , nationality , artwork) #Funcion para añadir al map nationality
 
@@ -437,6 +532,70 @@ def find_adq_date(catalog , initial_date_list , final_date_list):
                     
     return final_list
 
+def req2(catalog , initial_date_list , final_date_list):
+    list_dates = mp.keySet(catalog["Adquisition_Date"])
+    new_list = lt.newList()
+    purchased_list = lt.newList()
+    for date in lt.iterator(list_dates):
+        if compare_dates(date , initial_date_list , final_date_list):
+            key_value = mp.get(catalog["Adquisition_Date"] , date)
+            value = me.getValue(key_value)
+            for element in lt.iterator(value["artworks"]):
+                lt.addLast(new_list , element)
+    
+    for element in lt.iterator(new_list):
+        if element["CreditLine"] == "Purchase":
+            lt.addLast(purchased_list , element)
+
+    new_list_sorted = mer.sort(new_list, cmpArtworkByDateAcquired)
+
+    return new_list_sorted , purchased_list
+
+def rank_nationality(catalog):
+    nationalities = mp.keySet(catalog["Nationality"])
+    dict_countries_artworks = {}
+    dict_countries = {}
+    for nationality in lt.iterator(nationalities):
+        nation_key_value = mp.get(catalog["Nationality"] , nationality)
+        nation_value = me.getValue(nation_key_value)
+        tot_artworks = lt.size(nation_value["artworks"])
+        dict_countries[nationality] = tot_artworks
+        dict_countries_artworks[nationality] = nation_value["artworks"]
+    list_countries = list(dict_countries.items())
+    list_countries.sort(key=lambda x:x[1])
+
+    return dict_countries_artworks , list_countries
+
+
+
+def compare_dates(fecha_map , initial_date_list , final_date_list):
+    fecha_map_list = fecha_map.split("-")
+    ret_value = False
+    if fecha_map != "":
+        if fecha_map_list[0] >= initial_date_list[0] and fecha_map_list[0] <= final_date_list[0]:
+                ret_value = True
+    return ret_value
+
+def medium(catalog , artist):
+    map = catalog["Artist_Artworks"]
+    info = mp.get(map , artist)
+    valor = me.getValue(info)
+    size_artworks = lt.size(valor["artworks"])
+    size_medium = mp.size(valor["Medium"])
+
+    map_medium = valor["Medium"]
+    keys = mp.keySet(map_medium)
+    most_used_medium = None
+    for medium_k in lt.iterator(keys):
+        element = mp.get(map_medium , medium_k)
+        value = me.getValue(element)
+        size = lt.size(value["artworks"])
+        
+
+
+    return size_artworks , size_medium
+    
+
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
@@ -499,3 +658,39 @@ def sort_art_list (art_list):
     sub_list = lt.subList(art_list , 1 , lt.size(art_list))
     sorted_list = sa.sort(sub_list , cmpArtworkByDateAcquired)
     return sorted_list
+
+def cmpArtworkByDateAcquired(artwork1, artwork2):
+    """
+    Devuelve verdadero (True) si el 'DateAcquired' de artwork1 es menor que el de artwork2
+    Args:
+    artwork1: informacion de la primera obra que incluye su valor 'DateAcquired'
+    artwork2: informacion de la segunda obra que incluye su valor 'DateAcquired'
+    """
+    f1 = artwork1["DateAcquired"]
+    f2 = artwork2["DateAcquired"]
+    f1_lst = f1.split("-")
+    f2_lst = f2.split("-")
+    ret = None 
+
+    if len(f1_lst) > len(f2_lst):
+        ret = False
+    elif len(f1_lst) < len(f2_lst):
+        ret = True
+    elif len(f1_lst) == 3 and len(f2_lst) == 3:
+        if f1_lst[0] < f2_lst[0]:
+            ret = True
+        elif f1_lst[0] > f2_lst[0]:
+            ret = False
+        elif f1_lst[0] == f2_lst[0]:
+            if f1_lst[1] < f2_lst[1]:
+                ret = True
+            elif f1_lst[1] > f2_lst[1]:
+                ret = False
+            else:
+                if f1_lst[2] < f2_lst[2]:
+                    ret = True
+                elif f1_lst[2] > f2_lst[2]:
+                    ret = False
+                else:
+                    ret = False
+    return ret

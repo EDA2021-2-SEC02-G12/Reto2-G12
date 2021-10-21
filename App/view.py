@@ -44,7 +44,8 @@ def printMenu():
     print("4 - Contar el número total de obras de una nacionalidad")
     print("5 - Listar cronológicamente los artistas")
     print("6 - Listar cronológicamente las adquisiciones")
-
+    print("7 - Clasificar las obras de un artista por técnica")
+    print("8 - Clasificar las obras por la nacionalidad de sus creadores")
 catalog = None
 
 
@@ -80,12 +81,46 @@ def print_req_1(list_artists):
         + " Año de Fallecimiento: " + str(element["EndDate"]) + "Nacionalidad: " + str(element["Nationality"])
         + " Género: " + str(element["Gender"]))
 
-def print_req2(catalog , list_adq):
+def print_req2(list_adq , list_pur):
     print("El número total de obras en el rango cronólógico es: " + str(lt.size(list_adq)))
+    print("El numero de obras adquiridas por purchase es: " + str(lt.size(list_pur)))
     print("Las 3 primeras obras son: ")
     for i in range(1, 4):
         artwork = lt.getElement(list_adq , i)
-        print("Titulo: " + str(artwork["Title"]) + "Fechas: " + str(artwork["DateAcquired"]))
+        print("Titulo: " + str(artwork["Title"]) + "Fechas: " + str(artwork["DateAcquired"])
+        + " Medio: " + str(artwork["Medium"]) + " Dimensiones: "
+        + str(artwork["Dimensions"]))
+    print("Las 3 ultimas son: ")
+    for j in range(lt.size(list_adq)-3, lt.size(list_adq)):
+        artwork = lt.getElement(list_adq , j)
+        print("Titulo: " + str(artwork["Title"]) + "Fechas: " + str(artwork["DateAcquired"])
+        + " Medio: " + str(artwork["Medium"]) + " Dimensiones: "
+        + str(artwork["Dimensions"]))
+
+def print_countries_ranked(dict_countries , list_countries_ranked):
+    print("El top 10 de paises en el moma es: ")
+    sample = len(list_countries_ranked) - 10
+    counter = len(list_countries_ranked)
+    biggest_country = list_countries_ranked[counter - 1]
+    while counter > sample:
+        country = list_countries_ranked[counter - 1]
+        print(country)
+        counter -= 1
+    print("Las 3 primeras y las 3 ultimas obras de " + biggest_country[0] + " son: ")
+    biggest = dict_countries[biggest_country[0]]
+    index = 1
+    while index < 4:
+        artwork = lt.getElement(biggest , index)
+        print('Titulo: ' + artwork["Title"] + ' Fecha de la obra: ' +
+                artwork["DateAcquired"] + ' Medio: ' + artwork["Medium"] +  ' Dimensiones ' + artwork["Dimensions"])
+        index += 1
+
+    index = lt.size(biggest)
+    while index > (lt.size(biggest) - 3):
+        artwork = lt.getElement(biggest , index)
+        print('Titulo: ' + artwork["Title"] + ' Fecha de la obra: ' +
+                artwork["DateAcquired"] + ' Medio: ' + artwork["Medium"] +  ' Dimensiones ' + artwork["Dimensions"])
+        index -= 1
 
 """
 Menu principal
@@ -124,8 +159,22 @@ while True:
         final_date = input("Ingrese la fecha final: ")
         initial_date_list = initial_date.split("-")
         final_date_list = final_date.split("-")
-        list_adq = controller.find_adq_date(catalog , initial_date_list , final_date_list)
-        print_req2(catalog , list_adq)
+        list_adq = controller.req2(catalog , initial_date_list , final_date_list)
+        print_req2(list_adq[0] , list_adq[1])
+    
+    elif int(inputs[0]) == 7:
+
+        artist = input("Ingrese el nombre: ")
+        list = controller.rank_nationality(catalog , artist)
+        print("Total de obras: " + str(list[0]))
+        print("Total de tecnicas: " + str(list[1]))
+        
+
+    elif int(inputs[0]) == 8:
+
+        list = controller.medium(catalog)
+        print_countries_ranked(list[0] , list[1])
+        
 
     else:
         sys.exit(0)
