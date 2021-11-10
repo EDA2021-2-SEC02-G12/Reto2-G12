@@ -172,7 +172,7 @@ while True:
 
     elif int(inputs[0]) == 8:
 
-        list = controller.medium(catalog)
+        list = controller.rank_nationality(catalog)
         print_countries_ranked(list[0] , list[1])
         
 
